@@ -1,0 +1,16 @@
+
+pyvenv.cfg
+
+Lib/
+
+Scripts/
+
+test_camelot.py
+
+test-user.py
+
+.cache
+
+__pycache__/
+
+env/
