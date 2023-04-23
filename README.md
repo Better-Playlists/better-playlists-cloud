@@ -1,4 +1,4 @@
-# Getting Started with Better Playlists
+# Getting Started with Better Playlists - Cloud Function
 This guide explains how to install and run the Better Playlists app.
 
 ### Prerequisites
@@ -8,11 +8,11 @@ This guide explains how to install and run the Better Playlists app.
 ### Installation
 Clone the repository.
 ```
-git clone https://github.com/seanwendt/spotify-playlist-camelot.git
+git clone https://github.com/Better-Playlists/spotify-better-playlists-cloud.git
 ```
 Navigate to the project directory.
 ```
-cd spotify-playlist-camelot
+cd spotify-better-playlists-cloud
 ```
 Create a virtual environment for the project (we'll call it "env")
 ```
@@ -33,14 +33,11 @@ pip install -r requirements.txt
 ```
 
 #### Set Environment Variables
-To access the Spotify API, you need to set the Spotify client ID, client secret, and redirect URL as environment variables. The main script will prompt input if they're not found locally.
+To access the Spotify API, you need to set the Spotify client ID, client secret, and redirect URL as environment variables. 
 
 
 #### Run the Project
-Once you have set the environment variables, you can run the test.py script to test the project.
-```
-python test.py
-```
+TODO 
 
 # How it works
 TODO
