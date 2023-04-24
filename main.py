@@ -41,17 +41,8 @@ def make_playlist(request):
 
     request_json = request.get_json()
     if request_json and 'access_token' in request_json and 'playlist_url' in request_json:
-    # TODO - add public option
-    # if request_json and 'access_token' in request_json and 'playlist_url' and 'make_public' in request_json:
-        # Get environment variables
-        # client_id = os.environ.get('SPOTIPY_CLIENT_ID')
-        # client_secret = os.environ.get('SPOTIPY_CLIENT_SECRET')
-        # redirect_uri = os.environ.get('SPOTIPY_REDIRECT_URI') # TODO - possibly unnecessary now since cloud function doesn't handle auth anymore?
-
-        # if not client_id or not client_secret or not redirect_uri:
-        #     raise Exception("Missing environment variable(s)")
-        # else: 
-        #     print("Environment variables set successfully!")
+    # TODO - add make_public option:
+    #if request_json and 'access_token' in request_json and 'playlist_url' and 'make_public' in request_json:
 
         # Check that the playlist url is valid before proceeding
         PLAYLIST_URL = request_json['playlist_url']
