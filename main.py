@@ -135,14 +135,14 @@ def make_playlist(request):
             playlist_desc, playlist_name = sp.playlist(playlist_id, fields="description,name").values()
 
             # TODO - check if the new playlist name is > 100 chars, decide what to do if it is
-            new_playlist_name = f"{playlist_name} (sorted)"
-            new_playlist_desc = f"{playlist_desc} (sorted by Better Playlists)"
+            new_playlist_name = f"{playlist_name} (sorted by Better Playlists)"
+            new_playlist_desc = f"{playlist_desc} (sorted by Better Playlists - github.com/Better-Playlists)"
 
             # Create a new playlist
             new_playlist_id = sp.user_playlist_create(
                 user, 
                 new_playlist_name, 
-                public=True, 
+                public=True, # TODO - public=request_json['make_public'] 
                 collaborative=False, 
                 description=new_playlist_desc
             )['id']
