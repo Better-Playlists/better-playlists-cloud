@@ -158,11 +158,12 @@ def make_playlist(request):
 
         new_playlist_id = create_new_playlist()
         new_playlist_url = f"https://open.spotify.com/playlist/{new_playlist_id}"
+        new_playlist_deeplink = f"spotify://playlist/{new_playlist_id}"
         print(f"New playlist URL is {new_playlist_url}")
         
         response_dict = {
             "message": "Success", 
-            "sorted_playlist": new_playlist_url 
+            "sorted_playlist": new_playlist_deeplink 
         }
 
         return (response_dict, 200, headers)
