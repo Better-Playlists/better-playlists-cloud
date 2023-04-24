@@ -7,8 +7,19 @@ from utils import pitch_to_camelot, extract_playlist_id, reorder_list
 
 @functions_framework.http
 def make_playlist(request):
-    # For more information about CORS and CORS preflight requests, see:
-    # https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request
+    """HTTP Cloud Function.
+    Args:
+        request (flask.Request): The request object.  Expects access_token and playlist_url query string parameters
+        <https://flask.palletsprojects.com/en/1.1.x/api/#incoming-request-data>
+    Returns:
+        The response text, or any set of values that can be turned into a
+        Response object using `make_response`.  We'll return the new playlist url here if successful.
+        <https://flask.palletsprojects.com/en/1.1.x/api/#flask.make_response>.
+    Note:
+        For more information on how Flask integrates with Cloud
+        Functions, see the `Writing HTTP functions` page.
+        <https://cloud.google.com/functions/docs/writing/http#http_frameworks>
+    """
 
     # Set CORS headers for the preflight request
     if request.method == 'OPTIONS':
@@ -25,39 +36,25 @@ def make_playlist(request):
 
     # Set CORS headers for the main request
     headers = {
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': 'betterplaylists.netlify.app'
     }
-    """HTTP Cloud Function.
-    Args:
-        request (flask.Request): The request object.  Expects access_token and playlist_url query string parameters
-        <https://flask.palletsprojects.com/en/1.1.x/api/#incoming-request-data>
-    Returns:
-        The response text, or any set of values that can be turned into a
-        Response object using `make_response`.  We'll return the new playlist url here if successful.
-        <https://flask.palletsprojects.com/en/1.1.x/api/#flask.make_response>.
-    Note:
-        For more information on how Flask integrates with Cloud
-        Functions, see the `Writing HTTP functions` page.
-        <https://cloud.google.com/functions/docs/writing/http#http_frameworks>
-    """
+
     request_json = request.get_json()
     if request_json and 'access_token' in request_json and 'playlist_url' in request_json:
+    # TODO - add public option
+    # if request_json and 'access_token' in request_json and 'playlist_url' and 'make_public' in request_json:
         # Get environment variables
-        # TIP: In Windows environements, you can set these in Windows > Edit the system environment variables > Environment Variables > User variables for <user>
-        client_id = os.environ.get('SPOTIPY_CLIENT_ID')
-        client_secret = os.environ.get('SPOTIPY_CLIENT_SECRET')
-        redirect_uri = os.environ.get('SPOTIPY_REDIRECT_URI')
+        # client_id = os.environ.get('SPOTIPY_CLIENT_ID')
+        # client_secret = os.environ.get('SPOTIPY_CLIENT_SECRET')
+        # redirect_uri = os.environ.get('SPOTIPY_REDIRECT_URI') # TODO - possibly unnecessary now since cloud function doesn't handle auth anymore?
 
-        # Check if any of the environment variables are missing
-        if not client_id or not client_secret or not redirect_uri:
-            raise Exception("Missing environment variable(s)")
-        else: 
-            print("Environment variables set successfully!")
+        # if not client_id or not client_secret or not redirect_uri:
+        #     raise Exception("Missing environment variable(s)")
+        # else: 
+        #     print("Environment variables set successfully!")
 
-        ## Ask the user for the playlist they want to use
+        # Check that the playlist url is valid before proceeding
         PLAYLIST_URL = request_json['playlist_url']
-
-        # Check that the url has been modified before proceeding
         assert PLAYLIST_URL != "https://open.spotify.com/playlist/...", "Playlist URL is not valid!"
 
         # Create the Spotipy Client using Spotify access token
@@ -84,22 +81,20 @@ def make_playlist(request):
                     'bpm': None,
                     'uri': track['uri']
                 }
-            
+
             if playlist_tracks['next']:
                 playlist_tracks = sp.next(playlist_tracks)
             else:
                 playlist_tracks = None
 
-
-        # If tracks_dict contains more than 100 tracks, we need to get the audio features in chunks from the API
-        max_track_ids = 100
         num_tracks = len(tracks_dict)
-
         if num_tracks == 0:
             print("Error! No tracks found.")
             exit()
-
+        
+        # If tracks_dict contains more than 100 tracks, we need to get the audio features in chunks 
         # Divide the track ids into chunks of max_track_ids
+        max_track_ids = 100
         track_ids_chunks = [list(tracks_dict.keys())[i:i+max_track_ids] for i in range(0, num_tracks, max_track_ids)]
 
         for chunk in track_ids_chunks:
@@ -130,7 +125,6 @@ def make_playlist(request):
 
         # Assess the similarity between all tracks and then reorder the list
         sorted_list = reorder_list(new_list)
-        # pprint(sorted_list, indent=4, width=300)
 
         # Create a list containing just the track URIs
         track_uris_list = []
@@ -141,23 +135,26 @@ def make_playlist(request):
         # Experiment - reverse order for energizing style?
         track_uris_list.reverse()
 
-
         def create_new_playlist():
-            # Get the current user id
+            # Get the current user id (inherited from access token)
             user = sp.current_user()['id']
 
             # Get the current playlist name and description
             # Note, the API returns fields in alphabetical order, not according to the order of fields passed as arguments
             playlist_desc, playlist_name = sp.playlist(playlist_id, fields="description,name").values()
 
-            print(f"Current playlist name is {playlist_name}\nCurrent playlist description: {playlist_desc}")
-
             # TODO - check if the new playlist name is > 100 chars, decide what to do if it is
             new_playlist_name = f"{playlist_name} (sorted)"
             new_playlist_desc = f"{playlist_desc} (sorted by Better Playlists)"
 
             # Create a new playlist
-            new_playlist_id = sp.user_playlist_create(user, new_playlist_name, public=True, collaborative=False, description=new_playlist_desc)['id']
+            new_playlist_id = sp.user_playlist_create(
+                user, 
+                new_playlist_name, 
+                public=True, 
+                collaborative=False, 
+                description=new_playlist_desc
+            )['id']
 
             # Add the tracks to the new playlist in batches of 100
             max_size = 100
@@ -165,17 +162,19 @@ def make_playlist(request):
             for uris in split_uris:
                 sp.playlist_add_items(new_playlist_id, uris)
 
-            pprint(f"New playlist ID is {new_playlist_id}")
             return new_playlist_id
 
 
         new_playlist_id = create_new_playlist()
-        print(f"New playlist URL is https://open.spotify.com/playlist/{new_playlist_id}")
-        new_playlist_url = f"New playlist URL is https://open.spotify.com/playlist/{new_playlist_id}"
-        response_dict = {"message": "Success", "sorted_playlist": new_playlist_url }
+        new_playlist_url = f"https://open.spotify.com/playlist/{new_playlist_id}"
+        print(f"New playlist URL is {new_playlist_url}")
+        
+        response_dict = {
+            "message": "Success", 
+            "sorted_playlist": new_playlist_url 
+        }
 
         return (response_dict, 200, headers)
     else:
-        return ({'message': "Success"}, 200, headers)
-
+        return ({'message': "Error: access_token or playlist_url missing from request json"}, 404, headers)
 
