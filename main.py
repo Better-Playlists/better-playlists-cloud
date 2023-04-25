@@ -36,7 +36,7 @@ def make_playlist(request):
 
     # Set CORS headers for the main request
     headers = {
-        'Access-Control-Allow-Origin': 'https://betterplaylists.netlify.app'
+        'Access-Control-Allow-Origin': '*'
     }
 
     request_json = request.get_json()
