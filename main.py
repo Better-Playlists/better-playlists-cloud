@@ -136,7 +136,6 @@ def make_playlist(request):
 
             # TODO - check if the new playlist name is > 100 chars, decide what to do if it is
             new_playlist_name = f"{playlist_name} (sorted by Better Playlists)"
-            new_playlist_desc = f"{playlist_desc} (sorted by Better Playlists - github.com/Better-Playlists)"
 
             # Create a new playlist
             new_playlist_id = sp.user_playlist_create(
@@ -144,7 +143,7 @@ def make_playlist(request):
                 new_playlist_name, 
                 public=True, # TODO - public=request_json['make_public'] 
                 collaborative=False, 
-                description=new_playlist_desc
+                description=playlist_desc
             )['id']
 
             # Add the tracks to the new playlist in batches of 100
