@@ -114,12 +114,8 @@ def make_playlist(request):
                     'key_tonal': key_tonal,
                 })
 
-        # TODO - this simply changes the schema from a dictionary to a list of objects, we could create it as such to begin with above
-        new_list = []
-        for key, value in tracks_dict.items():
-            new_dict = value.copy()
-            new_dict["id"] = key
-            new_list.append(new_dict)
+        # Convert the dictionary to a list of objects
+        unsorted_tracks_list = convert_tracks_dict_to_list(tracks_dict)
 
         # Assess the similarity between all tracks and then reorder the list
         sorted_tracks_list = reorder_list(unsorted_tracks_list)

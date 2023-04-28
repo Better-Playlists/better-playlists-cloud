@@ -113,3 +113,14 @@ def reorder_list(lst):
         return [lst[i] for i in ordered_indices]
     except Exception as e:
         print(f"An error occurred sorting the tracks list: {e}")
+
+def convert_tracks_dict_to_list(tracks_dict):
+    new_list = []
+    try:
+        for key, value in tracks_dict.items():
+            new_dict = value.copy()
+            new_dict["id"] = key
+            new_list.append(new_dict)
+    except AttributeError as e:
+        print(f"Error converting tracks_dict to list: {e}")
+    return new_list
