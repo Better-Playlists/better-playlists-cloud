@@ -136,6 +136,7 @@ def create_new_playlist(user, sp, playlist_id, sorted_track_uris_list):
         print(f"Error fetching playlist information via the playlist id: {e}")
     
     new_playlist_name = f"{playlist_name} (sorted by Better Playlists)"
+    new_playlist_desc = html.unescape(playlist_desc)
 
     # Some logic to handle cases where the new playlist name ends up being longer than 100 chars
     if len(new_playlist_name) > 100:
@@ -152,7 +153,7 @@ def create_new_playlist(user, sp, playlist_id, sorted_track_uris_list):
             new_playlist_name, 
             public=True, # TODO - public=request_json['make_public'] 
             collaborative=False, 
-            description=html.unescape(playlist_desc)
+            description=new_playlist_desc
         )['id']
     except Exception as e:
         print(f"Error creating the playlist: {e}")
