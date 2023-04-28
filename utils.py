@@ -124,3 +124,44 @@ def convert_tracks_dict_to_list(tracks_dict):
     except AttributeError as e:
         print(f"Error converting tracks_dict to list: {e}")
     return new_list
+
+def create_new_playlist(user, sp, playlist_id, sorted_track_uris_list):
+    # Get the current playlist name and description
+    # Note the API returns fields in alphabetical order, not according to the order of fields passed as arguments
+    try:
+        playlist_desc, playlist_name = sp.playlist(playlist_id, fields="description,name").values()
+    except Exception as e:
+        print(f"Error fetching playlist information via the playlist id: {e}")
+    
+    new_playlist_name = f"{playlist_name} (sorted by Better Playlists)"
+
+    # Some logic to handle cases where the new playlist name ends up being longer than 100 chars
+    if len(new_playlist_name) > 100:
+        new_playlist_name = f"{playlist_name} (sorted)"
+        if len(new_playlist_name) > 100:
+            new_playlist_name = f"{playlist_name} *"
+            if len(new_playlist_name) > 100:
+                new_playlist_name = playlist_name
+
+    # Create a new playlist
+    try: 
+        new_playlist_id = sp.user_playlist_create(
+            user, 
+            new_playlist_name, 
+            public=True, # TODO - public=request_json['make_public'] 
+            collaborative=False, 
+            description=playlist_desc
+        )['id']
+    except Exception as e:
+        print(f"Error creating the playlist: {e}")
+
+    # Add the tracks to the new playlist in batches of 100
+    max_size = 100
+    split_uris = [sorted_track_uris_list[i:i+max_size] for i in range(0, len(sorted_track_uris_list), max_size)]
+    for uris in split_uris:
+        try:
+            sp.playlist_add_items(new_playlist_id, uris)
+        except Exception as e:
+            print(f"Error adding items to playlist {new_playlist_id}: {e}")
+
+    return new_playlist_id

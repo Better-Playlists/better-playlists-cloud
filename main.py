@@ -129,36 +129,10 @@ def make_playlist(request):
         # Experiment - reverse order for energizing style?
         sorted_track_uris_list.reverse()
 
-        def create_new_playlist():
-            # Get the current user id (inherited from access token)
-            user = sp.current_user()['id']
-
-            # Get the current playlist name and description
-            # Note, the API returns fields in alphabetical order, not according to the order of fields passed as arguments
-            playlist_desc, playlist_name = sp.playlist(playlist_id, fields="description,name").values()
-
-            # TODO - check if the new playlist name is > 100 chars, decide what to do if it is
-            new_playlist_name = f"{playlist_name} (sorted by Better Playlists)"
-
-            # Create a new playlist
-            new_playlist_id = sp.user_playlist_create(
-                user, 
-                new_playlist_name, 
-                public=True, # TODO - public=request_json['make_public'] 
-                collaborative=False, 
-                description=playlist_desc
-            )['id']
-
-            # Add the tracks to the new playlist in batches of 100
-            max_size = 100
-            split_uris = [track_uris_list[i:i+max_size] for i in range(0, len(track_uris_list), max_size)]
-            for uris in split_uris:
-                sp.playlist_add_items(new_playlist_id, uris)
-
-            return new_playlist_id
-
-
-        new_playlist_id = create_new_playlist()
+        # Get the current user id (inherited from access token)
+        user = sp.current_user()['id']
+        pprint(f"User is {user}")
+        new_playlist_id = create_new_playlist(user, sp, playlist_id, sorted_track_uris_list)
         new_playlist_url = f"https://open.spotify.com/playlist/{new_playlist_id}"
         new_playlist_deeplink = f"spotify://playlist/{new_playlist_id}"
         print(f"New playlist URL is {new_playlist_url}")
