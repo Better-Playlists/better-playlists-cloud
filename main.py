@@ -1,9 +1,12 @@
-import os
-import functions_framework
+import functions_framework # accessible to Google Cloud Functions
 import spotipy
 from pprint import pprint
 
-from utils import pitch_to_camelot, extract_playlist_id, reorder_list
+from utils import (pitch_to_camelot, 
+                    extract_playlist_id, 
+                    reorder_list, 
+                    convert_tracks_dict_to_list, 
+                    create_new_playlist)
 
 @functions_framework.http
 def make_playlist(request):
@@ -40,10 +43,10 @@ def make_playlist(request):
     }
 
     request_json = request.get_json()
+
     if request_json and 'access_token' in request_json and 'playlist_url' in request_json:
     # TODO - add make_public option:
     #if request_json and 'access_token' in request_json and 'playlist_url' and 'make_public' in request_json:
-
         # Check that the playlist url is valid before proceeding
         PLAYLIST_URL = request_json['playlist_url']
         assert PLAYLIST_URL != "https://open.spotify.com/playlist/...", "Playlist URL is not valid!"
@@ -55,9 +58,7 @@ def make_playlist(request):
                                         status_retries=1, backoff_factor=0.3, language=None)
 
         # Create a dictionary that we'll use for storing track metadata
-        # TODO - we convert this to a list of objects later, when we might as well just make it a list of objects to start with, but requires some refactoring
         tracks_dict = dict()
-
         # Get tracks from a given playlist ID.
         playlist_id = extract_playlist_id(PLAYLIST_URL)
         playlist_tracks = sp.playlist_tracks(playlist_id, limit=50)
@@ -66,10 +67,13 @@ def make_playlist(request):
             for track_obj in playlist_tracks['items']:
                 track = track_obj['track']
                 tracks_dict[track['id']] = {
-                    'name': track['name'],
                     'artist': track['artists'][0]['name'],
-                    'key': None,
                     'bpm': None,
+                    'camelot': None,
+                    'key': None,
+                    'key_tonal': None,
+                    'mode': None,
+                    'name': track['name'],
                     'uri': track['uri']
                 }
 
@@ -83,23 +87,23 @@ def make_playlist(request):
             print("Error! No tracks found.")
             exit()
         
-        # If tracks_dict contains more than 100 tracks, we need to get the audio features in chunks 
-        # Divide the track ids into chunks of max_track_ids
+        # In case tracks_dict contains more than 100 tracks, we need to query for audio features in chunks 
+        # Divide the track ids into chunks of max_track_ids, creating a list of lists of the track ids
         max_track_ids = 100
         track_ids_chunks = [list(tracks_dict.keys())[i:i+max_track_ids] for i in range(0, num_tracks, max_track_ids)]
 
+        # Fetch audio features for each track in the chunk
         for chunk in track_ids_chunks:
-            # Fetch audio features for each track in the chunk
             tracks_meta = sp.audio_features(chunk)
-            
+
             for track_meta_obj in tracks_meta:
                 track_id = track_meta_obj['id']
                 tracks_dict[track_id].update({
+                    'bpm': track_meta_obj['tempo'],
                     'key': track_meta_obj['key'],
                     'mode': track_meta_obj['mode'],
-                    'bpm': track_meta_obj['tempo'],
                 })
-                
+
                 # Use the pitch_to_camelot() function to get additional data for each track
                 camelot, key_tonal = pitch_to_camelot(track_meta_obj['key'], track_meta_obj['mode'])
                 tracks_dict[track_id].update({
@@ -115,16 +119,16 @@ def make_playlist(request):
             new_list.append(new_dict)
 
         # Assess the similarity between all tracks and then reorder the list
-        sorted_list = reorder_list(new_list)
+        sorted_tracks_list = reorder_list(unsorted_tracks_list)
 
         # Create a list containing just the track URIs
-        track_uris_list = []
-        for obj in sorted_list:
-            track_uris_list.append(obj['uri'])
-        pprint("# of items to be added to new playlist: " + str(len(track_uris_list)))
+        sorted_track_uris_list = []
+        for track in sorted_tracks_list:
+            sorted_track_uris_list.append(track['uri'])
+        # pprint("# of items to be added to new playlist: " + str(len(track_uris_list)))
 
         # Experiment - reverse order for energizing style?
-        track_uris_list.reverse()
+        sorted_track_uris_list.reverse()
 
         def create_new_playlist():
             # Get the current user id (inherited from access token)

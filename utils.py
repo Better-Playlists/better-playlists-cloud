@@ -78,17 +78,18 @@ def pitch_to_camelot(pcn, major):
     return camelot, tonal
 
 # Generate similarity scores for each track pairing
-def similarity_score(obj1, obj2):
-    if obj1["camelot"][0] == obj2["camelot"][0] and obj1["camelot"][1] == obj2["camelot"][1]:
+# ["camelot"][0] == the number 1-12, ["camelot"][1] == the letter "A" or "B"
+def similarity_score(track1, track2):
+    if track1["camelot"][0] == track2["camelot"][0] and track1["camelot"][1] == track2["camelot"][1]:
         return 6
-    elif obj1["camelot"][0] == obj2["camelot"][0]:
-        return 5 if obj1["camelot"][1] == obj2["camelot"][1] else 4 if abs(ord(obj1["camelot"][1]) - ord(obj2["camelot"][1])) == 1 else 1
-    elif obj1["camelot"][1] == obj2["camelot"][1] and (obj1["camelot"][0] - obj2["camelot"][0] == 1 or obj2["camelot"][0] - obj1["camelot"][0] == 11):
+    elif track1["camelot"][0] == track2["camelot"][0]:
+        return 5 if track1["camelot"][1] == track2["camelot"][1] else 4 if abs(ord(track1["camelot"][1]) - ord(track2["camelot"][1])) == 1 else 1
+    elif track1["camelot"][1] == track2["camelot"][1] and (track1["camelot"][0] - track2["camelot"][0] == 1 or track2["camelot"][0] - track1["camelot"][0] == 11):
         return 3
-    elif obj1["camelot"][1] == obj2["camelot"][1] and (obj1["camelot"][0] - obj2["camelot"][0] == -1 or obj2["camelot"][0] - obj1["camelot"][0] == 11):
+    elif track1["camelot"][1] == track2["camelot"][1] and (track1["camelot"][0] - track2["camelot"][0] == -1 or track2["camelot"][0] - track1["camelot"][0] == 11):
         return 3
-    elif obj1["camelot"][1] == obj2["camelot"][1]:
-        return 2 if abs(obj1["camelot"][0] - obj2["camelot"][0]) == 2 else 0
+    elif track1["camelot"][1] == track2["camelot"][1]:
+        return 2 if abs(track1["camelot"][0] - track2["camelot"][0]) == 2 else 0
     else:
         return 0
 
