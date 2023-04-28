@@ -1,3 +1,5 @@
+import html
+
 def extract_playlist_id(url):
     """
     Extracts the playlist ID from a Spotify playlist URL.
@@ -150,7 +152,7 @@ def create_new_playlist(user, sp, playlist_id, sorted_track_uris_list):
             new_playlist_name, 
             public=True, # TODO - public=request_json['make_public'] 
             collaborative=False, 
-            description=playlist_desc
+            description=html.unescape(playlist_desc)
         )['id']
     except Exception as e:
         print(f"Error creating the playlist: {e}")
