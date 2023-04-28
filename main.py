@@ -88,7 +88,7 @@ def make_playlist(request):
         num_tracks = len(tracks_dict)
         if num_tracks == 0:
             print("Error! No tracks found.")
-            exit()
+            return ({'message': "Error! No tracks found."}, 404, headers)
         
         # In case tracks_dict contains more than 100 tracks, we need to query for audio features in chunks 
         # Divide the track ids into chunks of max_track_ids, creating a list of lists of the track ids
