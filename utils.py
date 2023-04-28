@@ -95,18 +95,21 @@ def similarity_score(track1, track2):
 
 # Track reordering algorithm
 def reorder_list(lst):
-    list_length = len(lst)
-    score_matrix = [[similarity_score(lst[i], lst[j]) for j in range(list_length)] for i in range(list_length)]
-    ordered_indices = [0]
-    for i in range(list_length - 1):
-        current_idx = ordered_indices[-1]
-        max_score = -1
-        max_idx = -1
-        for j in range(list_length):
-            if j not in ordered_indices:
-                score = score_matrix[current_idx][j]
-                if score > max_score:
-                    max_score = score
-                    max_idx = j
-        ordered_indices.append(max_idx)
-    return [lst[i] for i in ordered_indices]
+    try: 
+        list_length = len(lst)
+        score_matrix = [[similarity_score(lst[i], lst[j]) for j in range(list_length)] for i in range(list_length)]
+        ordered_indices = [0]
+        for i in range(list_length - 1):
+            current_idx = ordered_indices[-1]
+            max_score = -1
+            max_idx = -1
+            for j in range(list_length):
+                if j not in ordered_indices:
+                    score = score_matrix[current_idx][j]
+                    if score > max_score:
+                        max_score = score
+                        max_idx = j
+            ordered_indices.append(max_idx)
+        return [lst[i] for i in ordered_indices]
+    except Exception as e:
+        print(f"An error occurred sorting the tracks list: {e}")

@@ -52,10 +52,13 @@ def make_playlist(request):
         assert PLAYLIST_URL != "https://open.spotify.com/playlist/...", "Playlist URL is not valid!"
 
         # Create the Spotipy Client using Spotify access token
-        sp = spotipy.Spotify(auth=request_json['access_token'], requests_session=True, client_credentials_manager=None, 
+        try: 
+            sp = spotipy.Spotify(auth=request_json['access_token'], requests_session=True, client_credentials_manager=None, 
                                         oauth_manager=None, auth_manager=None, proxies=None, 
                                         requests_timeout=5, status_forcelist=None, retries=2, 
                                         status_retries=1, backoff_factor=0.3, language=None)
+        except Exception as e:
+            print(f"An error occurred initializing the Spotipy client: {e}")
 
         # Create a dictionary that we'll use for storing track metadata
         tracks_dict = dict()
