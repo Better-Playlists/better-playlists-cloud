@@ -123,7 +123,7 @@ def make_playlist(request):
 
         # print("length of sorted_tracks_list is " + str(len(sorted_tracks_list)))
         # for track in sorted_tracks_list:
-        #     print(track['camelot'] + " " + track['name'])
+        #     print(track['camelot'] + " " + track['name'] + " " + track['id'])
 
         # Create a list containing just the track URIs
         sorted_track_uris_list = []

@@ -59,7 +59,9 @@ def reorder_list(unsorted_tracks_list, camelot_similarities):
     except Exception as e:
         print(f"An error occurred sorting the tracks list: {e}")
 
-# Ensure (or die trying) no more than 5 tracks in a row have the same primary chord
+
+# Ensure (or die trying) no more than 6 tracks in a row have the same primary chord
+# TODO - get audio_analysis key_confidence first and presort using confidence intervals to improve overall groups
 def max_five(lst):
     try:
         # Initialize the list of unique camelot values and a counter
@@ -78,8 +80,8 @@ def max_five(lst):
                 # Reset the counter if the current camelot value is different from the previous one
                 camelot_counter = 1
 
-            # Check if we have 5 consecutive dictionaries with the same camelot value
-            if camelot_counter == 5:
+            # Check if we have 6 consecutive dictionaries with the same camelot value
+            if camelot_counter == 6:
                 # Get the index of the last dictionary with the same camelot value
                 last_index = i
                 while last_index < len(lst)-1 and lst[last_index+1]["camelot"] == lst[i]["camelot"]:
