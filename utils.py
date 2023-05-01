@@ -33,64 +33,70 @@ def pitch_to_camelot(pcn, major):
 
 # The special sauce algorithm
 def reorder_list(unsorted_tracks_list, camelot_similarities):
-    reordered_list = []
-    remaining_tracks = unsorted_tracks_list.copy()
-    current_track = remaining_tracks.pop(0)
-    reordered_list.append(current_track)
-    while remaining_tracks:
-        similarities = camelot_similarities[current_track['camelot']]
-        similar_tracks = [track for track in remaining_tracks if track['camelot'] in similarities]
-        if similar_tracks:
-            similar_tracks.sort(key=lambda track: similarities.index(track['camelot']))
-            current_track = similar_tracks.pop(0)
-            reordered_list.append(current_track)
-            remaining_tracks.remove(current_track)
-        else:
-            remaining_similarities = {track['camelot']: 0 for track in remaining_tracks}
-            for t1 in remaining_tracks:
-                for t2 in remaining_tracks:
-                    if t2['camelot'] in camelot_similarities[t1['camelot']]:
-                        remaining_similarities[t1['camelot']] += 1
-            current_track = max(remaining_tracks, key=lambda track: remaining_similarities[track['camelot']])
-            reordered_list.append(current_track)
-            remaining_tracks.remove(current_track)
-    return max_five(reordered_list)
-
+    try: 
+        reordered_list = []
+        remaining_tracks = unsorted_tracks_list.copy()
+        current_track = remaining_tracks.pop(0)
+        reordered_list.append(current_track)
+        while remaining_tracks:
+            similarities = camelot_similarities[current_track['camelot']]
+            similar_tracks = [track for track in remaining_tracks if track['camelot'] in similarities]
+            if similar_tracks:
+                similar_tracks.sort(key=lambda track: similarities.index(track['camelot']))
+                current_track = similar_tracks.pop(0)
+                reordered_list.append(current_track)
+                remaining_tracks.remove(current_track)
+            else:
+                remaining_similarities = {track['camelot']: 0 for track in remaining_tracks}
+                for t1 in remaining_tracks:
+                    for t2 in remaining_tracks:
+                        if t2['camelot'] in camelot_similarities[t1['camelot']]:
+                            remaining_similarities[t1['camelot']] += 1
+                current_track = max(remaining_tracks, key=lambda track: remaining_similarities[track['camelot']])
+                reordered_list.append(current_track)
+                remaining_tracks.remove(current_track)
+        return max_five(reordered_list)
+    except Exception as e:
+        print(f"An error occurred sorting the tracks list: {e}")
 
 # Ensure (or die trying) no more than 5 tracks in a row have the same primary chord
 def max_five(lst):
-    # Initialize the list of unique camelot values and a counter
-    camelot_list = [lst[0]["camelot"]]
-    camelot_counter = 1
+    try:
+        # Initialize the list of unique camelot values and a counter
+        camelot_list = [lst[0]["camelot"]]
+        camelot_counter = 1
 
-    # Iterate through the list starting from the second element
-    for i in range(1, len(lst)):
-        # Check if the current camelot value is the same as the previous one
-        if lst[i]["camelot"] == lst[i-1]["camelot"]:
-            # Increment the counter and append the camelot value to the list if it is not already present
-            if lst[i]["camelot"] not in camelot_list:
-                camelot_list.append(lst[i]["camelot"])
-            camelot_counter += 1
-        else:
-            # Reset the counter if the current camelot value is different from the previous one
-            camelot_counter = 1
+        # Iterate through the list starting from the second element
+        for i in range(1, len(lst)):
+            # Check if the current camelot value is the same as the previous one
+            if lst[i]["camelot"] == lst[i-1]["camelot"]:
+                # Increment the counter and append the camelot value to the list if it is not already present
+                if lst[i]["camelot"] not in camelot_list:
+                    camelot_list.append(lst[i]["camelot"])
+                camelot_counter += 1
+            else:
+                # Reset the counter if the current camelot value is different from the previous one
+                camelot_counter = 1
 
-        # Check if we have 5 consecutive dictionaries with the same camelot value
-        if camelot_counter == 5:
-            # Get the index of the last dictionary with the same camelot value
-            last_index = i
-            while last_index < len(lst)-1 and lst[last_index+1]["camelot"] == lst[i]["camelot"]:
-                last_index += 1
+            # Check if we have 5 consecutive dictionaries with the same camelot value
+            if camelot_counter == 5:
+                # Get the index of the last dictionary with the same camelot value
+                last_index = i
+                while last_index < len(lst)-1 and lst[last_index+1]["camelot"] == lst[i]["camelot"]:
+                    last_index += 1
 
-            # Move the rest of the dictionaries with the same camelot value to the end of the list
-            rest = lst[i:last_index+1]
-            lst = lst[:i] + lst[last_index+1:] + rest
+                # Move the rest of the dictionaries with the same camelot value to the end of the list
+                rest = lst[i:last_index+1]
+                lst = lst[:i] + lst[last_index+1:] + rest
 
-            # Reset the camelot list and counter
-            camelot_list = []
-            camelot_counter = 1
+                # Reset the camelot list and counter
+                camelot_list = []
+                camelot_counter = 1
 
-    return lst
+        return lst
+    except Exception as e:
+        print(f"An error occurred sorting the tracks list: {e}")
+
 
 
 def convert_tracks_dict_to_list(tracks_dict):
