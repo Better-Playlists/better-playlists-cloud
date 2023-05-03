@@ -8,11 +8,11 @@ This guide explains how to install and run the Better Playlists app.
 ### Installation
 Clone the repository.
 ```
-git clone https://github.com/Better-Playlists/spotify-better-playlists-cloud.git
+git clone https://github.com/Better-Playlists/better-playlists-cloud.git
 ```
 Navigate to the project directory.
 ```
-cd spotify-better-playlists-cloud
+cd better-playlists-cloud
 ```
 Create a virtual environment for the project (we'll call it "env")
 ```
