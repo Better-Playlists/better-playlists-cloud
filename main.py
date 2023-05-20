@@ -5,6 +5,7 @@ from pprint import pprint
 from utils import (pitch_to_camelot, 
                     extract_playlist_id, 
                     reorder_list, 
+                    camelot_similarities,
                     convert_tracks_dict_to_list, 
                     create_new_playlist)
 
@@ -118,16 +119,21 @@ def make_playlist(request):
         unsorted_tracks_list = convert_tracks_dict_to_list(tracks_dict)
 
         # Assess the similarity between all tracks and then reorder the list
-        sorted_tracks_list = reorder_list(unsorted_tracks_list)
+        sorted_tracks_list = reorder_list(unsorted_tracks_list, camelot_similarities)
+
+        # print("length of sorted_tracks_list is " + str(len(sorted_tracks_list)))
+        # for track in sorted_tracks_list:
+        #     print(track['camelot'] + " " + track['name'] + " " + track['id'])
 
         # Create a list containing just the track URIs
         sorted_track_uris_list = []
+
         for track in sorted_tracks_list:
             sorted_track_uris_list.append(track['uri'])
         # pprint("# of items to be added to new playlist: " + str(len(track_uris_list)))
 
         # Experiment - reverse order for energizing style?
-        sorted_track_uris_list.reverse()
+        # sorted_track_uris_list.reverse()
 
         # Get the current user id (inherited from access token)
         user = sp.current_user()['id']
