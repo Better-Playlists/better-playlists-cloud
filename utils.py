@@ -125,6 +125,10 @@ def create_or_update_playlist(user, sp, playlist_id, sorted_track_uris_list, use
     
     new_playlist_name = f"{playlist_name} (sorted by Better Playlists)"
     new_playlist_desc = html.unescape(playlist_desc)
+    
+    # We need to add the tracks to the new playlist in batches of 100
+    max_size = 100
+    split_uris = [sorted_track_uris_list[i:i+max_size] for i in range(0, len(sorted_track_uris_list), max_size)]
 
     # Some logic to handle cases where the new playlist name ends up being longer than 100 chars
     if len(new_playlist_name) > 100:
@@ -134,26 +138,36 @@ def create_or_update_playlist(user, sp, playlist_id, sorted_track_uris_list, use
             if len(new_playlist_name) > 100:
                 new_playlist_name = playlist_name
 
-    # Create a new playlist
-    try: 
-        new_playlist_id = sp.user_playlist_create(
-            user, 
-            new_playlist_name, 
-            public=True, # TODO - public=request_json['make_public'] 
-            collaborative=False, 
-            description=new_playlist_desc
-        )['id']
-    except Exception as e:
-        print(f"Error creating the playlist: {e}")
-
-    # Add the tracks to the new playlist in batches of 100
-    max_size = 100
-    split_uris = [sorted_track_uris_list[i:i+max_size] for i in range(0, len(sorted_track_uris_list), max_size)]
-    for uris in split_uris:
-        try:
-            sp.playlist_add_items(new_playlist_id, uris)
+    if use_existing_playlist == False:
+        # Create a new playlist
+        try: 
+            new_playlist_id = sp.user_playlist_create(
+                user, 
+                new_playlist_name, 
+                public=True, # TODO - public=request_json['make_public'] 
+                collaborative=False, 
+                description=new_playlist_desc
+            )['id']
         except Exception as e:
-            print(f"Error adding items to playlist {new_playlist_id}: {e}")
+            print(f"Error creating the playlist: {e}")
+
+        # Add the tracks to the new playlist
+        for uris in split_uris:
+            try:
+                sp.playlist_add_items(new_playlist_id, uris)
+            except Exception as e:
+                print(f"Error adding items to playlist {new_playlist_id}: {e}")
+    else:
+        try:
+            # Update the playlist name
+            sp.playlist_change_details(playlist_id, name=new_playlist_name)
+            # Clear the playlist
+            sp.playlist_replace_items(playlist_id, items=[])
+            # Re-add the sorted tracks
+            for uris in split_uris:
+                sp.playlist_add_items(playlist_id, uris)
+        except Exception as e:
+            print(f"Error replacing items in original playlist {playlist_id}: {e}")
 
     return new_playlist_id
 
@@ -243,5 +257,3 @@ major_minor_dict = {
     0: "minor",
     1: "major"
 }
-
-
