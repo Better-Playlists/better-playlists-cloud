@@ -125,7 +125,7 @@ def create_or_update_playlist(user, sp, playlist_id, sorted_track_uris_list, use
     
     new_playlist_name = f"{playlist_name} (sorted by Better Playlists)"
     new_playlist_desc = html.unescape(playlist_desc)
-    
+
     # We need to add the tracks to the new playlist in batches of 100
     max_size = 100
     split_uris = [sorted_track_uris_list[i:i+max_size] for i in range(0, len(sorted_track_uris_list), max_size)]
@@ -168,7 +168,8 @@ def create_or_update_playlist(user, sp, playlist_id, sorted_track_uris_list, use
                 sp.playlist_add_items(playlist_id, uris)
         except Exception as e:
             print(f"Error replacing items in original playlist {playlist_id}: {e}")
-
+        return playlist_id
+    
     return new_playlist_id
 
 
