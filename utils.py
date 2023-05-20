@@ -113,7 +113,7 @@ def convert_tracks_dict_to_list(tracks_dict):
     return new_list
 
 
-def create_new_playlist(user, sp, playlist_id, sorted_track_uris_list):
+def create_or_update_playlist(user, sp, playlist_id, sorted_track_uris_list, use_existing_playlist = False):
     """
     Get the current playlist name and description
     Note the API returns fields in alphabetical order, not according to the order of fields passed as arguments

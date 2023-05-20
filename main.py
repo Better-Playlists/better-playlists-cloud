@@ -7,7 +7,7 @@ from utils import (pitch_to_camelot,
                     reorder_list, 
                     camelot_similarities,
                     convert_tracks_dict_to_list, 
-                    create_new_playlist)
+                    create_or_update_playlist)
 
 @functions_framework.http
 def make_playlist(request):
@@ -43,14 +43,15 @@ def make_playlist(request):
         'Access-Control-Allow-Origin': '*'
     }
 
+    # Extract the json body
     request_json = request.get_json()
 
-    if request_json and 'access_token' in request_json and 'playlist_url' in request_json:
-    # TODO - add make_public option:
-    #if request_json and 'access_token' in request_json and 'playlist_url' and 'make_public' in request_json:
+    if request_json and request_json.get('access_token') and request_json.get('playlist_url'):
         # Check that the playlist url is valid before proceeding
         PLAYLIST_URL = request_json['playlist_url']
         assert PLAYLIST_URL != "https://open.spotify.com/playlist/...", "Playlist URL is not valid!"
+
+        use_existing_playlist = request_json['use_existing_playlist'] if request_json.get('use_existing_playlist') else False
 
         # Create the Spotipy Client using Spotify access token
         try: 
@@ -63,6 +64,7 @@ def make_playlist(request):
 
         # Create a dictionary that we'll use for storing track metadata
         tracks_dict = dict()
+        
         # Get tracks from a given playlist ID.
         playlist_id = extract_playlist_id(PLAYLIST_URL)
         playlist_tracks = sp.playlist_tracks(playlist_id, limit=50)
@@ -121,16 +123,11 @@ def make_playlist(request):
         # Assess the similarity between all tracks and then reorder the list
         sorted_tracks_list = reorder_list(unsorted_tracks_list, camelot_similarities)
 
-        # print("length of sorted_tracks_list is " + str(len(sorted_tracks_list)))
-        # for track in sorted_tracks_list:
-        #     print(track['camelot'] + " " + track['name'] + " " + track['id'])
-
         # Create a list containing just the track URIs
         sorted_track_uris_list = []
 
         for track in sorted_tracks_list:
             sorted_track_uris_list.append(track['uri'])
-        # pprint("# of items to be added to new playlist: " + str(len(track_uris_list)))
 
         # Experiment - reverse order for energizing style?
         # sorted_track_uris_list.reverse()
@@ -138,7 +135,7 @@ def make_playlist(request):
         # Get the current user id (inherited from access token)
         user = sp.current_user()['id']
         pprint(f"User is {user}")
-        new_playlist_id = create_new_playlist(user, sp, playlist_id, sorted_track_uris_list)
+        new_playlist_id = create_or_update_playlist(user, sp, playlist_id, sorted_track_uris_list, use_existing_playlist)
         new_playlist_url = f"https://open.spotify.com/playlist/{new_playlist_id}"
         new_playlist_deeplink = f"spotify://playlist/{new_playlist_id}"
         print(f"New playlist URL is {new_playlist_url}")
