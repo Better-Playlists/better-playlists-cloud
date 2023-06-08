@@ -1,4 +1,5 @@
 import html
+import random
 
 def extract_playlist_id(url):
     """
@@ -111,6 +112,15 @@ def convert_tracks_dict_to_list(tracks_dict):
     except AttributeError as e:
         print(f"Error converting tracks_dict to list: {e}")
     return new_list
+
+
+def shuffle_unsorted_tracks_list(tracks_list):
+    # Fisher-Yates algorithm, first index is excluded to preserve first song in original playlist
+    n = len(tracks_list)
+    for i in range(n - 1, 1, -1):
+        j = random.randint(1, i)
+        tracks_list[i], tracks_list[j] = tracks_list[j], tracks_list[i]
+    return tracks_list
 
 
 def create_new_playlist(user, sp, playlist_id, sorted_track_uris_list):
