@@ -3,7 +3,8 @@ import spotipy
 from pprint import pprint
 
 from utils import (pitch_to_camelot, 
-                    extract_playlist_id, 
+                    extract_playlist_id,
+                    shuffle_unsorted_tracks_list, 
                     reorder_list, 
                     camelot_similarities,
                     convert_tracks_dict_to_list, 
@@ -43,11 +44,10 @@ def make_playlist(request):
         'Access-Control-Allow-Origin': '*'
     }
 
+    # Extract the json body
     request_json = request.get_json()
 
-    if request_json and 'access_token' in request_json and 'playlist_url' in request_json:
-    # TODO - add make_public option:
-    #if request_json and 'access_token' in request_json and 'playlist_url' and 'make_public' in request_json:
+    if request_json and request_json.get('access_token') and request_json.get('playlist_url'):
         # Check that the playlist url is valid before proceeding
         PLAYLIST_URL = request_json['playlist_url']
         assert PLAYLIST_URL != "https://open.spotify.com/playlist/...", "Playlist URL is not valid!"
@@ -118,8 +118,11 @@ def make_playlist(request):
         # Convert the dictionary to a list of objects
         unsorted_tracks_list = convert_tracks_dict_to_list(tracks_dict)
 
+        # Shuffle the unsorted list, except the first song, to add slight variance to the final playlist
+        shuffled_unsorted_tracks_list = shuffle_unsorted_tracks_list(unsorted_tracks_list)
+
         # Assess the similarity between all tracks and then reorder the list
-        sorted_tracks_list = reorder_list(unsorted_tracks_list, camelot_similarities)
+        sorted_tracks_list = reorder_list(shuffled_unsorted_tracks_list, camelot_similarities)
 
         # print("length of sorted_tracks_list is " + str(len(sorted_tracks_list)))
         # for track in sorted_tracks_list:
@@ -130,7 +133,6 @@ def make_playlist(request):
 
         for track in sorted_tracks_list:
             sorted_track_uris_list.append(track['uri'])
-        # pprint("# of items to be added to new playlist: " + str(len(track_uris_list)))
 
         # Experiment - reverse order for energizing style?
         # sorted_track_uris_list.reverse()
