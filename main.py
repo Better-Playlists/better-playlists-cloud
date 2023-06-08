@@ -44,11 +44,10 @@ def make_playlist(request):
         'Access-Control-Allow-Origin': '*'
     }
 
+    # Extract the json body
     request_json = request.get_json()
 
-    if request_json and 'access_token' in request_json and 'playlist_url' in request_json:
-    # TODO - add make_public option:
-    #if request_json and 'access_token' in request_json and 'playlist_url' and 'make_public' in request_json:
+    if request_json and request_json.get('access_token') and request_json.get('playlist_url'):
         # Check that the playlist url is valid before proceeding
         PLAYLIST_URL = request_json['playlist_url']
         assert PLAYLIST_URL != "https://open.spotify.com/playlist/...", "Playlist URL is not valid!"
@@ -134,7 +133,6 @@ def make_playlist(request):
 
         for track in sorted_tracks_list:
             sorted_track_uris_list.append(track['uri'])
-        # pprint("# of items to be added to new playlist: " + str(len(track_uris_list)))
 
         # Experiment - reverse order for energizing style?
         # sorted_track_uris_list.reverse()
