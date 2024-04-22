@@ -56,7 +56,7 @@ def make_playlist(request):
         try: 
             sp = spotipy.Spotify(auth=request_json['access_token'], requests_session=True, client_credentials_manager=None, 
                                         oauth_manager=None, auth_manager=None, proxies=None, 
-                                        requests_timeout=5, status_forcelist=None, retries=2, 
+                                        requests_timeout=7, status_forcelist=None, retries=1, 
                                         status_retries=1, backoff_factor=0.3, language=None)
         except Exception as e:
             print(f"An error occurred initializing the Spotipy client: {e}")
