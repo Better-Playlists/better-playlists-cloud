@@ -129,7 +129,10 @@ def create_new_playlist(user, sp, playlist_id, sorted_track_uris_list):
     Note the API returns fields in alphabetical order, not according to the order of fields passed as arguments
     """
     try:
-        playlist_desc, playlist_name = sp.playlist(playlist_id, fields="description,name").values()
+        # playlist_desc, playlist_name = sp.playlist(playlist_id, fields="description,name").values()
+        pnd = sp.playlist(playlist_id, fields="description,name")
+        playlist_desc = pnd['description']
+        playlist_name = pnd['name']
     except Exception as e:
         print(f"Error fetching playlist information via the playlist id: {e}")
     
